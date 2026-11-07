@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CPA Tax Estimator</title>
+  <meta name="description" content="Desktop app for small businesses: upload bank statements and receipts, get every transaction sorted into IRS categories and an estimate of the federal tax you owe." />
+  <link rel="icon" type="image/png" href="icon.png" />
+  <style>
+    :root { --bg: #f6f8fb; --panel: #ffffff; --text: #1d2433; --muted: #5d6679; --line: #e2e7ef; --accent: #1f6feb; --accent-ink: #ffffff; --good: #15803d; --code: #0f172a; --code-ink: #e2e8f0; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0d1117; --panel: #161b22; --text: #e6edf3; --muted: #9aa5b5; --line: #2a313c; --accent: #4493f8; --accent-ink: #0d1117; --good: #3fb950; --code: #010409; --code-ink: #e6edf3; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 "Segoe UI", system-ui, -apple-system, sans-serif; }
+    a { color: var(--accent); }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+    header.top { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); text-decoration: none; }
+    .brand img { width: 32px; height: 32px; }
+    nav a { margin-left: 18px; color: var(--muted); text-decoration: none; font-size: 15px; }
+    nav a:hover { color: var(--text); }
+    .hero { text-align: center; padding: 48px 0 32px; }
+    .hero img.logo { width: 96px; height: 96px; }
+    h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.15; margin: 16px 0 12px; }
+    .lead { font-size: 19px; color: var(--muted); max-width: 680px; margin: 0 auto 28px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--text); background: var(--panel); }
+    .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-size: 17px; padding: 14px 26px; }
+    .downloads { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .small { font-size: 14px; color: var(--muted); }
+    .shot { margin: 36px auto 0; border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 16px 50px rgba(15, 25, 45, 0.15); max-width: 100%; height: auto; display: block; }
+    section { padding: 56px 0 8px; }
+    h2 { font-size: 28px; margin: 0 0 8px; }
+    .sub { color: var(--muted); margin: 0 0 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+    .card h3 { margin: 0 0 6px; font-size: 17px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+    .steps { counter-reset: step; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .steps .card::before { counter-increment: step; content: counter(step); display: inline-flex; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); align-items: center; justify-content: center; font-weight: 700; margin-bottom: 10px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+    .two img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
+    pre { background: var(--code); color: var(--code-ink); padding: 14px 16px; border-radius: 10px; overflow-x: auto; font-size: 14px; margin: 6px 0 18px; }
+    code { font-family: Consolas, "SF Mono", Menlo, monospace; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 4px; }
+    .tabs button { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+    .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    .note { border-left: 4px solid var(--accent); background: var(--panel); padding: 14px 18px; border-radius: 0 10px 10px 0; color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    td, th { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    footer { padding: 48px 0; color: var(--muted); font-size: 14px; text-align: center; }
+    @media (max-width: 760px) {
+      nav { display: none; }
+      .two { grid-template-columns: 1fr; }
+      .hero { padding-top: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="#"><img src="icon.png" alt="" />CPA Tax Estimator</a>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="#ai">AI setup</a>
+        <a href="https://github.com/Jeswin2011/cpa-tax-estimator/releases">Downloads</a>
+      </nav>
+    </header>
+
+    <div class="hero">
+      <img class="logo" src="icon.png" alt="CPA Tax Estimator icon" />
+      <h1>Know what your business owes the IRS</h1>
+      <p class="lead">Upload your bank statements, card statements and receipts. Every transaction is sorted into IRS categories, and you get an estimate of your federal tax, or your refund.</p>
+      <div class="downloads">
+        <a id="dl-main" class="btn primary" href="https://github.com/Jeswin2011/cpa-tax-estimator/releases/latest">Download</a>
+      </div>
+      <p class="small" id="dl-others">Free · Windows, Mac (Apple Silicon) and Linux · <a href="https://github.com/Jeswin2011/cpa-tax-estimator/releases/latest">All downloads</a></p>
+      <img class="shot" src="main.png" width="1280" height="860" alt="The app showing income, expenses, net profit, the federal tax owed and the tax calculation" />
+    </div>
+
+    <section id="features">
+      <h2>What it does</h2>
+      <p class="sub">Built for sole proprietors, single-member LLCs, C-corporations and the CPAs who work with them.</p>
+      <div class="grid">
+        <div class="card"><h3>Reads your files</h3><p>CSV, Excel and OFX/QFX bank downloads open instantly. PDFs, scans and phone photos of receipts are read by AI.</p></div>
+        <div class="card"><h3>Sorts every transaction</h3><p>Rent, wages, utilities, meals (50%), travel and more, matching Schedule C. Transfers and owner draws are left out.</p></div>
+        <div class="card"><h3>Estimates the tax</h3><p>Self-employment tax, the 20% QBI deduction and the 2025 brackets, or the flat 21% for C-corps. Shows the balance due or refund.</p></div>
+        <div class="card"><h3>You stay in control</h3><p>Click any category to see its purchases, and move anything that's in the wrong place. The totals update instantly.</p></div>
+        <div class="card"><h3>Catches AI mistakes</h3><p>Statements must reconcile to their opening and closing balance. Blurry lines are flagged, and duplicate receipts are unticked.</p></div>
+        <div class="card"><h3>Private by design</h3><p>Your numbers stay on your computer. The AI key is encrypted by your operating system.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>How it works</h2>
+      <p class="sub">Three steps, a few minutes.</p>
+      <div class="steps">
+        <div class="card"><h3>Upload</h3><p>Drop in a year of bank and card statements, receipts or payroll reports.</p></div>
+        <div class="card"><h3>Review</h3><p>Check the categories and fix anything with one click. AI-read documents show the original side by side.</p></div>
+        <div class="card"><h3>Estimate</h3><p>See profit, tax owed, what you've already paid, and your quarterly estimated payment.</p></div>
+      </div>
+      <div class="two" style="margin-top: 28px">
+        <img src="categories.png" width="1280" height="860" alt="Transactions grouped into category boxes, with the Rent box open" loading="lazy" />
+        <div>
+          <h3>Every purchase, grouped and editable</h3>
+          <p class="sub">Each category is a box showing its total and number of transactions. Open one to see every purchase, and use <b>Move to</b> if something belongs elsewhere.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Install</h2>
+      <p class="sub">Download the installer above, or install from a terminal with one command:</p>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-os="win">Windows</button>
+        <button role="tab" aria-selected="false" data-os="unix">Mac / Linux</button>
+      </div>
+      <pre id="cmd-win"><code>irm https://jeswin2011.github.io/cpa-tax-estimator/install.ps1 | iex</code></pre>
+      <pre id="cmd-unix" hidden><code>curl -fsSL https://jeswin2011.github.io/cpa-tax-estimator/install.sh | sh</code></pre>
+      <p class="note">The app isn't code-signed yet, so on first launch <b>Windows</b> may say "Windows protected your PC" (click <b>More info → Run anyway</b>). On a <b>Mac</b>, if you downloaded the .dmg in a browser, right-click the app and choose <b>Open</b>. The terminal installers avoid both prompts.</p>
+    </section>
+
+    <section id="ai">
+      <h2>AI setup (optional, free)</h2>
+      <p class="sub">CSV, Excel and OFX files work without AI. To read PDFs and photos, add a key in <b>AI settings</b>:</p>
+      <div class="two">
+        <table>
+          <tr><th>Service</th><th>Cost</th></tr>
+          <tr><td><b>NVIDIA</b><br><span class="small">Nemotron 3.5 Super VL</span></td><td>Free tier, about 40 requests a minute. <a href="https://build.nvidia.com/settings/api-keys">Get a key</a>.</td></tr>
+          <tr><td><b>Hugging Face</b><br><span class="small">Qwen3-VL</span></td><td>Pay as you go. <a href="https://huggingface.co/settings/tokens">Get a token</a>.</td></tr>
+        </table>
+        <img src="ai-settings.png" width="1280" height="860" alt="AI settings window with NVIDIA selected and steps to get a key" loading="lazy" />
+      </div>
+    </section>
+
+    <section>
+      <p class="note"><b>Estimate only, not tax advice.</b> The app leaves out state tax, credits, depreciation schedules and other adjustments. Have a CPA review the numbers before you file.</p>
+    </section>
+
+    <footer>
+      © 2026 Jeswin2011 · <a href="https://github.com/Jeswin2011/cpa-tax-estimator/releases">All versions</a>
+    </footer>
+  </div>
+
+  <script>
+    // Point the Download button at the right installer for this visitor's computer.
+    (async () => {
+      const ua = navigator.userAgent;
+      const os = /Windows/i.test(ua) ? 'win' : /Mac/i.test(ua) ? 'mac' : /Linux/i.test(ua) && !/Android/i.test(ua) ? 'linux' : null;
+      const label = { win: 'Download for Windows', mac: 'Download for Mac', linux: 'Download for Linux' }[os];
+      const match = { win: /Setup.*\.exe$/, mac: /\.dmg$/, linux: /\.AppImage$/ }[os];
+      if (os === 'unix' || os === 'mac' || os === 'linux') selectTab('unix');
+      if (!os) return;
+      try {
+        const res = await fetch('https://api.github.com/repos/Jeswin2011/cpa-tax-estimator/releases/latest');
+        if (!res.ok) return;
+        const release = await res.json();
+        const asset = release.assets.find((a) => match.test(a.name));
+        if (!asset) return;
+        const btn = document.getElementById('dl-main');
+        btn.href = asset.browser_download_url;
+        btn.textContent = `${label} (${release.tag_name}, ${Math.round(asset.size / 1048576)} MB)`;
+      } catch { /* keep the link to the releases page */ }
+    })();
+
+    function selectTab(os) {
+      document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.os === os)));
+      document.getElementById('cmd-win').hidden = os !== 'win';
+      document.getElementById('cmd-unix').hidden = os !== 'unix';
+    }
+    document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => selectTab(b.dataset.os)));
+  </script>
+</body>
+</html>
